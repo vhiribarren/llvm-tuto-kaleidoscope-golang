@@ -90,20 +90,20 @@ func (l *BaseLexer) ConsumeString(val string) error {
 	return nil
 }
 
-func (l *BaseLexer) ConsumeWhitespaces() error {
+func (l *BaseLexer) ConsumeWhitespaces() {
 	for {
 		val, err := l.PeekNext()
 		if err != nil {
-			return nil
+			return
 		}
-		if !isWhitespace(val) {
-			return nil
+		if !IsWhitespace(val) {
+			return
 		}
 		l.ConsumeNext()
 	}
 }
 
-func isWhitespace(val rune) bool {
+func IsWhitespace(val rune) bool {
 	switch val {
 	case ' ', '\t', '\n', '\f', '\r':
 		return true

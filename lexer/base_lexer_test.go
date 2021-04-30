@@ -39,9 +39,7 @@ func TestConsumeInvalidString(t *testing.T) {
 
 func TestWhitespaceConsumptionSimple(t *testing.T) {
 	lexer := NewBaseLexer("   \f   \n  \t")
-	if err := lexer.ConsumeWhitespaces(); err != nil {
-		t.Fatal(err)
-	}
+	lexer.ConsumeWhitespaces()
 	if _, err := lexer.ConsumeNext(); err == nil {
 		t.Fatal("Was waiting for an error")
 	}
@@ -49,15 +47,11 @@ func TestWhitespaceConsumptionSimple(t *testing.T) {
 
 func TestWhitespaceConsumptionWithWords(t *testing.T) {
 	lexer := NewBaseLexer("   hello    world")
-	if err := lexer.ConsumeWhitespaces(); err != nil {
-		t.Fatal(err)
-	}
+	lexer.ConsumeWhitespaces()
 	if err := lexer.ConsumeString("hello"); err != nil {
 		t.Fatal(err)
 	}
-	if err := lexer.ConsumeWhitespaces(); err != nil {
-		t.Fatal(err)
-	}
+	lexer.ConsumeWhitespaces()
 	if err := lexer.ConsumeString("world"); err != nil {
 		t.Fatal(err)
 	}
