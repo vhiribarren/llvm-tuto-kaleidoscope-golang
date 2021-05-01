@@ -13,6 +13,7 @@ const (
 	KTokenExtern
 	KTokenIdentifier
 	KTokenNumber
+	KTokenSymbol
 )
 
 type KaleidoTokenContext struct {
@@ -40,6 +41,10 @@ func emitNumber(val string) *KaleidoTokenContext {
 	return &KaleidoTokenContext{Token: KTokenNumber, Value: val}
 }
 
+func emitSymbol(val rune) *KaleidoTokenContext {
+	return &KaleidoTokenContext{Token: KTokenSymbol, Value: string(val)}
+}
+
 type KaleidoLexer struct {
 	BaseLexer
 }
@@ -48,30 +53,31 @@ func NewKaleidoLexer(data string) KaleidoLexer {
 	return KaleidoLexer{BaseLexer: NewBaseLexer(data)}
 }
 
-func (l *KaleidoLexer) NextToken() (*KaleidoTokenContext, error) {
+func (l *KaleidoLexer) NextToken() *KaleidoTokenContext {
 	for {
 		l.ConsumeWhitespaces()
 		val, err := l.PeekNext()
 		switch {
 		case err != nil:
-			return emitEOF(), nil
+			return emitEOF()
 		case isAlphabetic(val):
 			result := l.consumeGreedAlphanum()
 			switch result {
 			case "def":
-				return emitDef(), nil
+				return emitDef()
 			case "extern":
-				return emitExtern(), nil
+				return emitExtern()
 			default:
-				return emitIdentifier(result), nil
+				return emitIdentifier(result)
 			}
 		case isNumeral(val):
 			result := l.consumeGreedNumber()
-			return emitNumber(result), nil
+			return emitNumber(result)
 		case val == '#':
 			l.consumeGreedCommentLine()
 		default:
-			return nil, newErrorBadRune("Received: %v but was not waiting for that", val)
+			l.ConsumeNext()
+			return emitSymbol(val)
 		}
 
 	}
