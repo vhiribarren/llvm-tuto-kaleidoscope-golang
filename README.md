@@ -1,5 +1,7 @@
 # LLVM Kaleidoscope Tutorial in Go
 
+_**Warning: WORK IN PROGRESS**_
+
 Base tutorial: https://llvm.org/docs/tutorial/index.html
 
 Launch tests:
