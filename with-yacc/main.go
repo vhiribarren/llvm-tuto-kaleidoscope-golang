@@ -2,7 +2,30 @@
 
 package main
 
+import (
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
+
+const EMPTY_STRING = ""
+
 func main() {
-	data := "def test(arg) 1+2+go()"
-	Parse(data)
+	filePtr := flag.String("file", EMPTY_STRING, "File container Kaleidoscope program")
+	flag.Parse()
+	if *filePtr == EMPTY_STRING {
+		usage()
+		return
+	}
+	data, err := ioutil.ReadFile(*filePtr)
+	if err != nil {
+		panic(err)
+	}
+	Parse(string(data))
+}
+
+func usage() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+	flag.PrintDefaults()
 }
