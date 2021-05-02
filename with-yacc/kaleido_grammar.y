@@ -27,13 +27,13 @@ import "alea.net/xp/llvm/kaleidoscope/lexer"
 
 %left<token> IDENTIFIER
 %left '('
-/*
+
 %type<expr> Expr FuncExpr
 %type<argList> ProtoArgList ProtoArgListContinuation
 %type<exprList> ExprList ExprListContinuation
 %type<proto> Prototype Ext
 %type<function> Def TopLevelExpr
-*/
+
 
 
 %%
@@ -43,26 +43,66 @@ TopLevel: TopLevel Ext ;
 TopLevel: TopLevel TopLevelExpr;
 TopLevel: ';' | /* Empty */ ;
 
-Def: DEF Prototype Expr { log.Println("Parsed rule: Def") };
-Ext: EXTERN Prototype ';' { log.Println("Parsed rule: Ext") };
+Def: DEF Prototype Expr
+    {
+        log.Println("Parsed rule: Def")
+        $$ = ast.FunctionAST{Prototype: $2, Body: $3}
+        log.Printf("%#v", $$)
+    };
+Ext: EXTERN Prototype ';'
+    {
+        log.Println("Parsed rule: Ext")
+        $$ = $2
+        log.Printf("%#v", $$)
+    };
+TopLevelExpr: Expr
+    {
+        log.Println("Parsed rule: TopLevelExpr")
+        $$ = ast.FunctionAST{Prototype: ast.PrototypeAST{FunctionName: "__main__", Args: []string{}},Body: $1}
+        log.Printf("%#v", $$)
+    };
 
-TopLevelExpr: Expr { log.Println("Parsed rule: TopLevelExpr") };
-
-Expr: IDENTIFIER | NUMBER;
+Expr: IDENTIFIER
+    { $$ = $1.Value };
+Expr: NUMBER
+    { $$ = $1.Value };
 Expr: FuncExpr ;
-Expr: '(' Expr ')'  ;
-Expr:  Expr '+' Expr;
-Expr:  Expr '-' Expr;
-Expr:  Expr '<' Expr;
-Expr:  Expr '*' Expr;
+Expr: '(' Expr ')'
+    { $$ = $2 };
+Expr:  Expr '+' Expr
+    { $$ = ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '+'} };
+Expr:  Expr '-' Expr
+    { $$ = ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '-'} };
+Expr:  Expr '<' Expr
+    { $$ = ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '<'} };
+Expr:  Expr '*' Expr
+    { $$ = ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '*'} };
 
-FuncExpr: IDENTIFIER '(' ExprList ')' { log.Println("Parsed rule: FuncExpr") };
-ExprList: ExprListContinuation | /* Empty */ ;
-ExprListContinuation: ExprListContinuation ',' Expr | Expr ;
+FuncExpr: IDENTIFIER '(' ExprList ')'
+    {
+        log.Println("Parsed rule: FuncExpr")
+        $$ = ast.CallExprAST{FunctionName: $1.Value, Args: $3}
+    };
+ExprList: ExprListContinuation ;
+ExprList:  /* Empty */
+        { $$ = []ast.ExprAST {} };
+ExprListContinuation: ExprListContinuation ',' Expr
+    { $$ = append($1, $3) };
+ExprListContinuation: Expr
+    { $$ = []ast.ExprAST { $1 } };
 
-Prototype: IDENTIFIER '(' ProtoArgList ')'  { log.Println("Parsed rule: Prototype") };
-ProtoArgList: ProtoArgListContinuation | /* Empty */ ; 
-ProtoArgListContinuation: ProtoArgListContinuation ',' IDENTIFIER | IDENTIFIER ;
+Prototype: IDENTIFIER '(' ProtoArgList ')'
+    {
+        log.Println("Parsed rule: Prototype")
+        $$ = ast.PrototypeAST{FunctionName: $1.Value, Args: $3}
+    };
+ProtoArgList: ProtoArgListContinuation;
+ProtoArgList:  /* Empty */
+    { $$ = []string {  } } ; 
+ProtoArgListContinuation: ProtoArgListContinuation ',' IDENTIFIER
+    { $$ = append($1, $3.Value) };
+ProtoArgListContinuation: IDENTIFIER
+    { $$ = []string { $1.Value } };
 
 %%
 

@@ -15,12 +15,12 @@ type VariableExprAST string
 
 type CallExprAST struct {
 	FunctionName string
-	Args         []string
+	Args         []ExprAST
 }
 
 type PrototypeAST struct {
-	Name string
-	Args []string
+	FunctionName string
+	Args         []string
 }
 
 type FunctionAST struct {

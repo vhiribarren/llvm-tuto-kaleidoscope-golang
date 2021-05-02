@@ -97,8 +97,8 @@ var yyAct = [...]int{
 	10, 24, 2, 21, 22, 9, 12, 25, 26, 27,
 	28, 31, 6, 7, 10, 16, 17, 19, 23, 9,
 	12, 18, 16, 17, 19, 20, 41, 35, 40, 14,
-	19, 13, 34, 33, 30, 29, 11, 5, 4, 15,
-	3, 1,
+	19, 13, 1, 5, 3, 4, 30, 29, 34, 15,
+	33, 11,
 }
 
 var yyPact = [...]int{
@@ -110,14 +110,14 @@ var yyPact = [...]int{
 }
 
 var yyPgo = [...]int{
-	0, 51, 50, 48, 47, 41, 0, 46, 45, 44,
+	0, 0, 51, 50, 48, 47, 46, 41, 45, 44,
 	43, 42,
 }
 
 var yyR1 = [...]int{
-	0, 1, 1, 1, 1, 1, 2, 3, 4, 6,
-	6, 6, 6, 6, 6, 6, 6, 7, 8, 8,
-	9, 9, 5, 10, 10, 11, 11,
+	0, 11, 11, 11, 11, 11, 9, 8, 10, 1,
+	1, 1, 1, 1, 1, 1, 1, 2, 5, 5,
+	6, 6, 7, 3, 3, 4, 4,
 }
 
 var yyR2 = [...]int{
@@ -127,11 +127,11 @@ var yyR2 = [...]int{
 }
 
 var yyChk = [...]int{
-	-1000, -1, 13, -2, -3, -4, 4, 5, -6, 11,
-	6, -7, 12, -5, 11, -5, 8, 9, 7, 10,
-	12, -6, -6, 12, 13, -6, -6, -6, -6, -8,
-	-9, -6, 14, -10, -11, 11, 14, 15, 14, 15,
-	-6, 11,
+	-1000, -11, 13, -9, -8, -10, 4, 5, -1, 11,
+	6, -2, 12, -7, 11, -7, 8, 9, 7, 10,
+	12, -1, -1, 12, 13, -1, -1, -1, -1, -5,
+	-6, -1, 14, -3, -4, 11, 14, 15, 14, 15,
+	-1, 11,
 }
 
 var yyDef = [...]int{
@@ -499,26 +499,99 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			log.Println("Parsed rule: Def")
+			yyVAL.function = ast.FunctionAST{Prototype: yyDollar[2].proto, Body: yyDollar[3].expr}
+			log.Printf("%#v", yyVAL.function)
 		}
 	case 7:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			log.Println("Parsed rule: Ext")
+			yyVAL.proto = yyDollar[2].proto
+			log.Printf("%#v", yyVAL.proto)
 		}
 	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			log.Println("Parsed rule: TopLevelExpr")
+			yyVAL.function = ast.FunctionAST{Prototype: ast.PrototypeAST{FunctionName: "__main__", Args: []string{}}, Body: yyDollar[1].expr}
+			log.Printf("%#v", yyVAL.function)
+		}
+	case 9:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.expr = yyDollar[1].token.Value
+		}
+	case 10:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.expr = yyDollar[1].token.Value
+		}
+	case 12:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.expr = yyDollar[2].expr
+		}
+	case 13:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.expr = ast.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '+'}
+		}
+	case 14:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.expr = ast.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '-'}
+		}
+	case 15:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.expr = ast.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '<'}
+		}
+	case 16:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.expr = ast.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '*'}
 		}
 	case 17:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			log.Println("Parsed rule: FuncExpr")
+			yyVAL.expr = ast.CallExprAST{FunctionName: yyDollar[1].token.Value, Args: yyDollar[3].exprList}
+		}
+	case 19:
+		yyDollar = yyS[yypt-0 : yypt+1]
+		{
+			yyVAL.exprList = []ast.ExprAST{}
+		}
+	case 20:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.exprList = append(yyDollar[1].exprList, yyDollar[3].expr)
+		}
+	case 21:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.exprList = []ast.ExprAST{yyDollar[1].expr}
 		}
 	case 22:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			log.Println("Parsed rule: Prototype")
+			yyVAL.proto = ast.PrototypeAST{FunctionName: yyDollar[1].token.Value, Args: yyDollar[3].argList}
+		}
+	case 24:
+		yyDollar = yyS[yypt-0 : yypt+1]
+		{
+			yyVAL.argList = []string{}
+		}
+	case 25:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.argList = append(yyDollar[1].argList, yyDollar[3].token.Value)
+		}
+	case 26:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.argList = []string{yyDollar[1].token.Value}
 		}
 	}
 	goto yystack /* stack new state and value */

@@ -3,6 +3,6 @@
 package main
 
 func main() {
-	data := "1 + 1"
+	data := "def test(arg) 1+2+go()"
 	Parse(data)
 }
