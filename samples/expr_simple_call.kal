@@ -1,0 +1,3 @@
+def addOne(value) value +1
+
+42 + addOne(42)

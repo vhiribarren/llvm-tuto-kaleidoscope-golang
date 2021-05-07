@@ -6,7 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+
+	"alea.net/xp/llvm/kaleidoscope/ast"
 )
 
 const EMPTY_STRING = ""
@@ -22,7 +25,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	Parse(string(data))
+	kaleidoAST := Parse(string(data)).Result()
+	log.Printf("AST: %#v", kaleidoAST)
+	visitor := ast.NewVisitorKaleido()
+	kaleidoAST.Accept(&visitor)
+	print(visitor.Module.String())
 }
 
 func usage() {

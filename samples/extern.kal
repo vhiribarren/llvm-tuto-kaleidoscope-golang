@@ -1,0 +1,2 @@
+ extern cos(x);
+ cos(1.234)
