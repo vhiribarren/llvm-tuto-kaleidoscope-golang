@@ -8,4 +8,4 @@ require (
 	golang.org/x/tools v0.1.0
 )
 
-replace github.com/llvm/llvm-project => ./github.com/llvm/llvm-project
+replace github.com/llvm/llvm-project => ./llvm-bindings/
