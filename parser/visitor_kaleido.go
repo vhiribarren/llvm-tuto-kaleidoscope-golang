@@ -124,11 +124,15 @@ func (v *VisitorKaleido) VisitFunctionAST(node *FunctionAST) interface{} {
 	basicBlock := v.context.AddBasicBlock(llvmFunc, "entry")
 	v.builder.SetInsertPointAtEnd(basicBlock)
 	bodyValue := node.Body.Accept(v).(llvm.Value)
+	if bodyValue.IsNil() {
+		// Error reading body, remove function.
+		llvmFunc.EraseFromParentAsFunction()
+		panic("Error reading body")
+	}
 	v.builder.CreateRet(bodyValue)
-	//llvm.VerifyFunction()
-	// missing from tuto :
-	// Error reading body, remove function.
-	// TheFunction->eraseFromParent();
-	// return nullptr;
+	if err := llvm.VerifyFunction(llvmFunc, llvm.PrintMessageAction); err != nil {
+		llvmFunc.EraseFromParentAsFunction()
+		panic(err)
+	}
 	return llvmFunc
 }
