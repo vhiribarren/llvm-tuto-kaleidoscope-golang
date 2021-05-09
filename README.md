@@ -35,12 +35,10 @@ Launch tests:
 
 If changed, some files may need to be regenerated:
 
-    go generate lexer/kaleido_lexer.go
-    go generate with-yacc/main.go
+    go generate ./...
 
 Launch:
 
-    cd with-yacc
     go run .
 
 ## Note on LLVM

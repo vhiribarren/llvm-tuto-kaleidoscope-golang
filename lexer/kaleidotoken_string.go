@@ -13,11 +13,12 @@ func _() {
 	_ = x[KTokenExtern-2]
 	_ = x[KTokenIdentifier-3]
 	_ = x[KTokenNumber-4]
+	_ = x[KTokenSymbol-5]
 }
 
-const _KaleidoToken_name = "KTokenEOFKTokenDefKTokenExternKTokenIdentifierKTokenNumber"
+const _KaleidoToken_name = "KTokenEOFKTokenDefKTokenExternKTokenIdentifierKTokenNumberKTokenSymbol"
 
-var _KaleidoToken_index = [...]uint8{0, 9, 18, 30, 46, 58}
+var _KaleidoToken_index = [...]uint8{0, 9, 18, 30, 46, 58, 70}
 
 func (i KaleidoToken) String() string {
 	if i < 0 || i >= KaleidoToken(len(_KaleidoToken_index)-1) {

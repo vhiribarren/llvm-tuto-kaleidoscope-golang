@@ -1,23 +1,23 @@
 %{
-package main
+package yacc
 
 import "log"
 import "unicode/utf8"
-import "alea.net/xp/llvm/kaleidoscope/ast"
+import "alea.net/xp/llvm/kaleidoscope/parser"
 import "alea.net/xp/llvm/kaleidoscope/lexer"
 
 %}
 
 %union{
     token lexer.KaleidoTokenContext
-	proto ast.PrototypeAST
-    function ast.FunctionAST
-	expr  ast.ExprAST
-    argList ast.ArgList
-    exprList ast.ExprList
-    program ast.ProgramAST
-    number ast.NumberExprAST
-    variable ast.VariableExprAST
+	proto parser.PrototypeAST
+    function parser.FunctionAST
+	expr  parser.ExprAST
+    argList parser.ArgList
+    exprList parser.ExprList
+    program parser.ProgramAST
+    number parser.NumberExprAST
+    variable parser.VariableExprAST
 }
 
 %token DEF
@@ -64,16 +64,16 @@ TopLevel: TopLevel TopLevelExpr
     };
 TopLevel: ';' 
 {
-    $$ = ast.ProgramAST{}
+    $$ = parser.ProgramAST{}
 };
 TopLevel: /* Empty */ 
     {
-        $$ = ast.ProgramAST{}
+        $$ = parser.ProgramAST{}
     };
 
 Def: DEF Prototype Expr
     {
-        $$ = ast.FunctionAST{Prototype: $2, Body: $3}
+        $$ = parser.FunctionAST{Prototype: $2, Body: $3}
     };
 Ext: EXTERN Prototype ';'
     {
@@ -81,41 +81,41 @@ Ext: EXTERN Prototype ';'
     };
 TopLevelExpr: Expr
     {
-        $$ = ast.FunctionAST{Prototype: ast.PrototypeAST{FunctionName: "__main__", Args: []string{}},Body: $1}
+        $$ = parser.FunctionAST{Prototype: parser.PrototypeAST{FunctionName: "__main__", Args: []string{}},Body: $1}
     };
 
 Expr: IDENTIFIER
-    { $$ = ast.VariableExprAST($1.Value) };
+    { $$ = parser.VariableExprAST($1.Value) };
 Expr: NUMBER
-    { $$ = ast.NumberExprAST($1.Value) };
+    { $$ = parser.NumberExprAST($1.Value) };
 Expr: FuncExpr ;
 Expr: '(' Expr ')'
     { $$ = $2 };
 Expr:  Expr '+' Expr
-    { $$ = &ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '+'} };
+    { $$ = &parser.BinaryExprAST{LHS: $1, RHS: $3, Op: '+'} };
 Expr:  Expr '-' Expr
-    { $$ = &ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '-'} };
+    { $$ = &parser.BinaryExprAST{LHS: $1, RHS: $3, Op: '-'} };
 Expr:  Expr '<' Expr
-    { $$ = &ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '<'} };
+    { $$ = &parser.BinaryExprAST{LHS: $1, RHS: $3, Op: '<'} };
 Expr:  Expr '*' Expr
-    { $$ = &ast.BinaryExprAST{LHS: $1, RHS: $3, Op: '*'} };
+    { $$ = &parser.BinaryExprAST{LHS: $1, RHS: $3, Op: '*'} };
 
 FuncExpr: IDENTIFIER '(' ExprList ')'
     {
         log.Println("Parsed rule: FuncExpr")
-        $$ = &ast.CallExprAST{FunctionName: $1.Value, Args: $3}
+        $$ = &parser.CallExprAST{FunctionName: $1.Value, Args: $3}
     };
 ExprList: ExprListContinuation ;
 ExprList:  /* Empty */
-        { $$ = []ast.ExprAST {} };
+        { $$ = []parser.ExprAST {} };
 ExprListContinuation: ExprListContinuation ',' Expr
     { $$ = append($1, $3) };
 ExprListContinuation: Expr
-    { $$ = []ast.ExprAST { $1 } };
+    { $$ = []parser.ExprAST { $1 } };
 
 Prototype: IDENTIFIER '(' ProtoArgList ')'
     {
-        $$ = ast.PrototypeAST{FunctionName: $1.Value, Args: $3}
+        $$ = parser.PrototypeAST{FunctionName: $1.Value, Args: $3}
     };
 ProtoArgList: ProtoArgListContinuation;
 ProtoArgList:  /* Empty */
@@ -131,7 +131,7 @@ const EOF = 0
 
 type ParserContext struct {
     lexer.KaleidoLexer
-    result * ast.ProgramAST
+    result * parser.ProgramAST
 }
 
 func (s *ParserContext) Lex(lval *yySymType) int {
@@ -158,7 +158,7 @@ func (s *ParserContext) Error(e string) {
     panic(e)
 }
 
-func (s *ParserContext) Result() (*ast.ProgramAST) {
+func (s *ParserContext) Result() (*parser.ProgramAST) {
     return s.result
 }
 

@@ -1,4 +1,4 @@
-package ast
+package parser
 
 type Visitor interface {
 	VisitNumberExprAST(*NumberExprAST) interface{}

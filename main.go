@@ -1,4 +1,4 @@
-//go:generate go run golang.org/x/tools/cmd/goyacc -l -o parser.go kaleido_grammar.y
+//go:generate go run golang.org/x/tools/cmd/goyacc -l -o parser/yacc/parser.go parser/yacc/kaleido_grammar.y
 
 package main
 
@@ -9,7 +9,8 @@ import (
 	"log"
 	"os"
 
-	"alea.net/xp/llvm/kaleidoscope/ast"
+	"alea.net/xp/llvm/kaleidoscope/parser"
+	"alea.net/xp/llvm/kaleidoscope/parser/yacc"
 )
 
 const EMPTY_STRING = ""
@@ -25,9 +26,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	kaleidoAST := Parse(string(data)).Result()
+	kaleidoAST := yacc.Parse(string(data)).Result()
 	log.Printf("AST: %#v", kaleidoAST)
-	visitor := ast.NewVisitorKaleido()
+	visitor := parser.NewVisitorKaleido()
 	kaleidoAST.Accept(&visitor)
 	print(visitor.Module.String())
 }
