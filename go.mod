@@ -3,7 +3,6 @@ module alea.net/xp/llvm/kaleidoscope
 go 1.16
 
 require (
-	github.com/llir/llvm v0.3.3
 	github.com/llvm/llvm-project v0.0.0-00010101000000-000000000000
 	golang.org/x/tools v0.1.0
 )

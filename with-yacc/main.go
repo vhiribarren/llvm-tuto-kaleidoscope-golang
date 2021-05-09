@@ -10,13 +10,11 @@ import (
 	"os"
 
 	"alea.net/xp/llvm/kaleidoscope/ast"
-	"github.com/llvm/llvm-project/llvm/bindings/go/llvm"
 )
 
 const EMPTY_STRING = ""
 
 func main() {
-	var _ llvm.Builder
 	filePtr := flag.String("file", EMPTY_STRING, "File container Kaleidoscope program")
 	flag.Parse()
 	if *filePtr == EMPTY_STRING {

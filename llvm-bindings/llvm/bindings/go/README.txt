@@ -47,9 +47,9 @@ LLVM there is no need to pass these arguments again after updating.
 Alternatively, you can build LLVM yourself, but you must then set the
 CGO_CPPFLAGS, CGO_CXXFLAGS and CGO_LDFLAGS environment variables:
 
-    $ export CGO_CPPFLAGS="`/usr/local/Cellar/llvm/12.0.0/bin/llvm-config --cppflags`"
+    $ export CGO_CPPFLAGS="`/path/to/llvm-build/bin/llvm-config --cppflags`"
     $ export CGO_CXXFLAGS=-std=c++14
-    $ export CGO_LDFLAGS="`/usr/local/Cellar/llvm/12.0.0/bin/llvm-config --ldflags --libs --system-libs all` -L/usr/local/Cellar/libffi/3.3_3/lib -lffi"
+    $ export CGO_LDFLAGS="`/path/to/llvm-build/bin/llvm-config --ldflags --libs --system-libs all`"
     $ go build -tags byollvm
 
 If you see a compilation error while compiling your code with Go 1.9.4 or later as follows,
