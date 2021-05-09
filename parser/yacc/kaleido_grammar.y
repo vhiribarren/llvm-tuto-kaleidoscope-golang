@@ -1,10 +1,13 @@
 %{
 package yacc
 
-import "log"
-import "unicode/utf8"
-import "alea.net/xp/llvm/kaleidoscope/parser"
-import "alea.net/xp/llvm/kaleidoscope/lexer"
+import(
+    "log"
+    "errors"
+    "unicode/utf8"
+    "alea.net/xp/llvm/kaleidoscope/parser"
+    "alea.net/xp/llvm/kaleidoscope/lexer"
+)
 
 %}
 
@@ -44,7 +47,7 @@ import "alea.net/xp/llvm/kaleidoscope/lexer"
 Program : TopLevel
     {
         $$ = $1
-        yylex.(*ParserContext).result = &$$
+        yylex.(*parserContext).result = &$$
     }
 
 TopLevel: TopLevel Def
@@ -129,12 +132,13 @@ ProtoArgListContinuation: IDENTIFIER
 
 const EOF = 0
 
-type ParserContext struct {
+type parserContext struct {
     lexer.KaleidoLexer
     result * parser.ProgramAST
+    err error
 }
 
-func (s *ParserContext) Lex(lval *yySymType) int {
+func (s *parserContext) Lex(lval *yySymType) int {
     tokenContext := s.NextToken()
     lval.token = *tokenContext
     switch tokenContext.Token {
@@ -154,16 +158,16 @@ func (s *ParserContext) Lex(lval *yySymType) int {
     }
 }
 
-func (s *ParserContext) Error(e string) {
-    panic(e)
+func (s *parserContext) Error(e string) {
+    s.result = nil
+    s.err = errors.New(e)
 }
 
-func (s *ParserContext) Result() (*parser.ProgramAST) {
-    return s.result
-}
-
-func Parse(buffer string) (* ParserContext){
-    parserContext := &ParserContext{KaleidoLexer: lexer.NewKaleidoLexer(buffer)}
-    yyParse(parserContext)
-    return parserContext
+func BuildKaleidoAST(buffer string) (*parser.ProgramAST, error) {
+    context := &parserContext{KaleidoLexer: lexer.NewKaleidoLexer(buffer)}
+    yyParse(context)
+    if context.result == nil {
+        return nil, context.err
+    }
+    return context.result, nil
 }

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -9,7 +10,7 @@ import (
 
 type VisitorKaleido struct {
 	context     *llvm.Context
-	Module      *llvm.Module
+	module      *llvm.Module
 	builder     *llvm.Builder
 	namedValues map[string]interface{}
 }
@@ -18,7 +19,25 @@ func NewVisitorKaleido() VisitorKaleido {
 	context := llvm.NewContext()
 	module := llvm.NewModule("")
 	builder := context.NewBuilder()
-	return VisitorKaleido{context: &context, Module: &module, builder: &builder}
+	return VisitorKaleido{context: &context, module: &module, builder: &builder}
+}
+
+func (v *VisitorKaleido) GenerateIR(node *ProgramAST) (irCode string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			irCode = ""
+			switch recoveredError := r.(type) {
+			case error:
+				err = recoveredError
+			case string:
+				err = errors.New(recoveredError)
+			default:
+				err = errors.New("Panic occured, recovered")
+			}
+		}
+	}()
+	node.Accept(v)
+	return v.module.String(), nil
 }
 
 func (v *VisitorKaleido) VisitNumberExprAST(node *NumberExprAST) interface{} {
@@ -55,7 +74,7 @@ func (v *VisitorKaleido) VisitVariableExprAST(node *VariableExprAST) interface{}
 
 func (v *VisitorKaleido) VisitCallExprAST(node *CallExprAST) interface{} {
 	log.Println("VisitCallExprAST")
-	funcRef := v.Module.NamedFunction(node.FunctionName)
+	funcRef := v.module.NamedFunction(node.FunctionName)
 	if funcRef.IsNil() {
 		panic("Function " + node.FunctionName + " does not exist")
 	}
@@ -77,7 +96,7 @@ func (v *VisitorKaleido) VisitPrototypeAST(node *PrototypeAST) interface{} {
 		paramTypes = append(paramTypes, llvm.DoubleType())
 	}
 	functionType := llvm.FunctionType(llvm.DoubleType(), paramTypes, false)
-	llvmFunc := llvm.AddFunction(*v.Module, node.FunctionName, functionType)
+	llvmFunc := llvm.AddFunction(*v.module, node.FunctionName, functionType)
 	llvmFunc.SetLinkage(llvm.ExternalLinkage)
 	for i, argName := range node.Args {
 		llvmFunc.Params()[i].SetName(argName)
@@ -87,7 +106,7 @@ func (v *VisitorKaleido) VisitPrototypeAST(node *PrototypeAST) interface{} {
 
 func (v *VisitorKaleido) VisitFunctionAST(node *FunctionAST) interface{} {
 	log.Println("VisitFunctionAST")
-	llvmFunc := v.Module.NamedFunction(node.Prototype.FunctionName)
+	llvmFunc := v.module.NamedFunction(node.Prototype.FunctionName)
 	if llvmFunc.IsNil() {
 		llvmFunc = node.Prototype.Accept(v).(llvm.Value)
 	}

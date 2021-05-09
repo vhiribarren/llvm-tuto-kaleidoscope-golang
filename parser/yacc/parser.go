@@ -3,10 +3,13 @@ package yacc
 
 import __yyfmt__ "fmt"
 
-import "log"
-import "unicode/utf8"
-import "alea.net/xp/llvm/kaleidoscope/parser"
-import "alea.net/xp/llvm/kaleidoscope/lexer"
+import (
+	"alea.net/xp/llvm/kaleidoscope/lexer"
+	"alea.net/xp/llvm/kaleidoscope/parser"
+	"errors"
+	"log"
+	"unicode/utf8"
+)
 
 type yySymType struct {
 	yys      int
@@ -52,12 +55,13 @@ const yyInitialStackSize = 16
 
 const EOF = 0
 
-type ParserContext struct {
+type parserContext struct {
 	lexer.KaleidoLexer
 	result *parser.ProgramAST
+	err    error
 }
 
-func (s *ParserContext) Lex(lval *yySymType) int {
+func (s *parserContext) Lex(lval *yySymType) int {
 	tokenContext := s.NextToken()
 	lval.token = *tokenContext
 	switch tokenContext.Token {
@@ -77,18 +81,18 @@ func (s *ParserContext) Lex(lval *yySymType) int {
 	}
 }
 
-func (s *ParserContext) Error(e string) {
-	panic(e)
+func (s *parserContext) Error(e string) {
+	s.result = nil
+	s.err = errors.New(e)
 }
 
-func (s *ParserContext) Result() *parser.ProgramAST {
-	return s.result
-}
-
-func Parse(buffer string) *ParserContext {
-	parserContext := &ParserContext{KaleidoLexer: lexer.NewKaleidoLexer(buffer)}
-	yyParse(parserContext)
-	return parserContext
+func BuildKaleidoAST(buffer string) (*parser.ProgramAST, error) {
+	context := &parserContext{KaleidoLexer: lexer.NewKaleidoLexer(buffer)}
+	yyParse(context)
+	if context.result == nil {
+		return nil, context.err
+	}
+	return context.result, nil
 }
 
 var yyExca = [...]int{
@@ -508,7 +512,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.program = yyDollar[1].program
-			yylex.(*ParserContext).result = &yyVAL.program
+			yylex.(*parserContext).result = &yyVAL.program
 		}
 	case 2:
 		yyDollar = yyS[yypt-2 : yypt+1]

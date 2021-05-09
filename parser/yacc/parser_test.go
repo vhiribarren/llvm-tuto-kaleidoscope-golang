@@ -11,7 +11,7 @@ func TestSomeValidInput(t *testing.T) {
 		"1+1",
 	}
 	for _, input := range validInputs {
-		Parse(input)
+		BuildKaleidoAST(input)
 	}
 }
 
@@ -31,8 +31,8 @@ func TestInvalidInput(t *testing.T) {
 			return
 		}
 		defer catchPanic()
-		Parse(invalidInputs[currentIndex])
+		BuildKaleidoAST(invalidInputs[currentIndex])
 	}
 	defer catchPanic()
-	Parse(invalidInputs[currentIndex])
+	BuildKaleidoAST(invalidInputs[currentIndex])
 }

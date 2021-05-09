@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -19,21 +20,43 @@ func main() {
 	filePtr := flag.String("file", EMPTY_STRING, "File container Kaleidoscope program")
 	flag.Parse()
 	if *filePtr == EMPTY_STRING {
-		usage()
+		startREPL()
 		return
 	}
 	data, err := ioutil.ReadFile(*filePtr)
 	if err != nil {
 		panic(err)
 	}
-	kaleidoAST := yacc.Parse(string(data)).Result()
+	kaleidoAST, err := yacc.BuildKaleidoAST(string(data))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	log.Printf("AST: %#v", kaleidoAST)
-	visitor := parser.NewVisitorKaleido()
-	kaleidoAST.Accept(&visitor)
-	print(visitor.Module.String())
+	kaleidoVisitor := parser.NewVisitorKaleido()
+	IRResult, err := kaleidoVisitor.GenerateIR(kaleidoAST)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	print(IRResult)
 }
 
-func usage() {
-	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
-	flag.PrintDefaults()
+func startREPL() {
+	reader := bufio.NewReader(os.Stdin)
+	kaleidoVisitor := parser.NewVisitorKaleido()
+	for {
+		fmt.Print("kaleido> ")
+		input, _ := reader.ReadString('\n')
+		kaleidoAST, err := yacc.BuildKaleidoAST(string(input))
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		IRResult, err := kaleidoVisitor.GenerateIR(kaleidoAST)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Print(IRResult)
+	}
 }
