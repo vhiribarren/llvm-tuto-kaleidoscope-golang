@@ -70,10 +70,18 @@ Before compiling the files, path to LLVM and FFI must be declared.
 In my case, if using HomeBrew:
 
 ```bash
-export CGO_CPPFLAGS="`/usr/local/Cellar/llvm/12.0.0/bin/llvm-config --cppflags`"
+export CGO_CPPFLAGS="`/usr/local/Cellar/llvm/12.0.0/bin/llvm-config --cppflags` -fvisibility=hidden"
 export CGO_CXXFLAGS=-std=c++14
 export CGO_LDFLAGS="`/usr/local/Cellar/llvm/12.0.0/bin/llvm-config --ldflags --libs --system-libs all` -L/usr/local/Cellar/libffi/3.3_3/lib -lffi"
 export CGO_LDFLAGS_ALLOW='-Wl,(-search_paths_first|-headerpad_max_install_names)'
 ```
 Then, the Go program can be compiled.
 
+Note that the `-fvisibility=hidden` flag was added to solve this warning message I had:
+
+    ld: warning: direct access in function 'llvm::LLParser::parseMDTuple(llvm::MDNode*&, bool)'
+    from file '/usr/local/Cellar/llvm/12.0.0/lib/libLLVMAsmParser.a(LLParser.cpp.o)' to global
+    weak symbol 'llvm::MDTuple::get(llvm::LLVMContext&, llvm::ArrayRef<llvm::Metadata*>)'
+    from file '/var/folders/zy/n1jdlb2j08v2mwbf94z700800000gn/T/go-link-465421937/000016.o' means
+    the weak symbol cannot be overridden at runtime. This was likely caused by different translation
+    units being compiled with different visibility settings.
