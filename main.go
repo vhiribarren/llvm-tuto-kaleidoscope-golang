@@ -10,8 +10,8 @@ import (
 	"log"
 	"os"
 
-	"alea.net/xp/llvm/kaleidoscope/parser"
 	"alea.net/xp/llvm/kaleidoscope/parser/yacc"
+	"alea.net/xp/llvm/kaleidoscope/visitor"
 )
 
 const EMPTY_STRING = ""
@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 	log.Printf("AST: %#v", kaleidoAST)
-	kaleidoVisitor := parser.NewVisitorKaleido()
+	kaleidoVisitor := visitor.NewVisitorKaleido()
 	IRResult, err := kaleidoVisitor.GenerateIR(kaleidoAST)
 	if err != nil {
 		fmt.Println(err)
@@ -44,7 +44,7 @@ func main() {
 
 func startREPL() {
 	reader := bufio.NewReader(os.Stdin)
-	kaleidoVisitor := parser.NewVisitorKaleido()
+	kaleidoVisitor := visitor.NewVisitorKaleido()
 	for {
 		fmt.Print("kaleido> ")
 		input, _ := reader.ReadString('\n')

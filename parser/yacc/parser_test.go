@@ -20,19 +20,10 @@ func TestInvalidInput(t *testing.T) {
 		"def a b c",
 		"extern extern",
 	}
-	currentIndex := len(invalidInputs) - 1
-	var catchPanic func()
-	catchPanic = func() {
-		if r := recover(); r == nil {
-			t.Fatal("The code did not panic")
+	for _, input := range invalidInputs {
+		_, err := BuildKaleidoAST(input)
+		if err == nil {
+			t.Error("The code did not panic")
 		}
-		currentIndex--
-		if currentIndex < 0 {
-			return
-		}
-		defer catchPanic()
-		BuildKaleidoAST(invalidInputs[currentIndex])
 	}
-	defer catchPanic()
-	BuildKaleidoAST(invalidInputs[currentIndex])
 }

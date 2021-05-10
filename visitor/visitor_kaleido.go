@@ -1,9 +1,11 @@
-package parser
+package visitor
 
 import (
 	"errors"
 	"fmt"
 	"log"
+
+	"alea.net/xp/llvm/kaleidoscope/parser"
 
 	"github.com/llvm/llvm-project/llvm/bindings/go/llvm"
 )
@@ -22,7 +24,7 @@ func NewVisitorKaleido() VisitorKaleido {
 	return VisitorKaleido{context: &context, module: &module, builder: &builder}
 }
 
-func (v *VisitorKaleido) GenerateIR(node *ProgramAST) (irCode string, err error) {
+func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			irCode = ""
@@ -40,13 +42,13 @@ func (v *VisitorKaleido) GenerateIR(node *ProgramAST) (irCode string, err error)
 	return v.module.String(), nil
 }
 
-func (v *VisitorKaleido) VisitNumberExprAST(node *NumberExprAST) interface{} {
+func (v *VisitorKaleido) VisitNumberExprAST(node *parser.NumberExprAST) interface{} {
 	log.Println("VisitNumberExprAST")
 	value := llvm.ConstFloatFromString(llvm.DoubleType(), string(*node))
 	return value
 }
 
-func (v *VisitorKaleido) VisitBinaryExprAST(node *BinaryExprAST) interface{} {
+func (v *VisitorKaleido) VisitBinaryExprAST(node *parser.BinaryExprAST) interface{} {
 	log.Println("VisitBinaryExprAST")
 	lhsValue := node.LHS.Accept(v).(llvm.Value)
 	rhsValue := node.RHS.Accept(v).(llvm.Value)
@@ -64,7 +66,7 @@ func (v *VisitorKaleido) VisitBinaryExprAST(node *BinaryExprAST) interface{} {
 	panic(fmt.Sprintf("Unknown operator: %v", node.Op))
 }
 
-func (v *VisitorKaleido) VisitVariableExprAST(node *VariableExprAST) interface{} {
+func (v *VisitorKaleido) VisitVariableExprAST(node *parser.VariableExprAST) interface{} {
 	log.Println("VisitVariableExprAST")
 	if res, found := v.namedValues[string(*node)]; found {
 		return res
@@ -72,7 +74,7 @@ func (v *VisitorKaleido) VisitVariableExprAST(node *VariableExprAST) interface{}
 	panic(fmt.Sprintf("Variable %v not found", string(*node)))
 }
 
-func (v *VisitorKaleido) VisitCallExprAST(node *CallExprAST) interface{} {
+func (v *VisitorKaleido) VisitCallExprAST(node *parser.CallExprAST) interface{} {
 	log.Println("VisitCallExprAST")
 	funcRef := v.module.NamedFunction(node.FunctionName)
 	if funcRef.IsNil() {
@@ -89,7 +91,7 @@ func (v *VisitorKaleido) VisitCallExprAST(node *CallExprAST) interface{} {
 	return v.builder.CreateCall(funcRef, llvmArgs, "calltmp")
 }
 
-func (v *VisitorKaleido) VisitPrototypeAST(node *PrototypeAST) interface{} {
+func (v *VisitorKaleido) VisitPrototypeAST(node *parser.PrototypeAST) interface{} {
 	log.Println("VisitPrototypeAST")
 	paramTypes := make([]llvm.Type, 0, len(node.Args))
 	for range node.Args {
@@ -104,7 +106,7 @@ func (v *VisitorKaleido) VisitPrototypeAST(node *PrototypeAST) interface{} {
 	return llvmFunc
 }
 
-func (v *VisitorKaleido) VisitFunctionAST(node *FunctionAST) interface{} {
+func (v *VisitorKaleido) VisitFunctionAST(node *parser.FunctionAST) interface{} {
 	log.Println("VisitFunctionAST")
 	llvmFunc := v.module.NamedFunction(node.Prototype.FunctionName)
 	if llvmFunc.IsNil() {
