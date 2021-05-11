@@ -24,6 +24,9 @@ Here what is currently done, with some differences with the original tutorial:
     - Usage of a Visitor pattern to analyze the abstract syntax tree
     - Usage of official LLVM v12 Go binding (based on LLVM C binding)
 
+- Step 4: JIT and Optimizer support
+    - https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl04.html
+    - WIP
 
 ## How to run
 

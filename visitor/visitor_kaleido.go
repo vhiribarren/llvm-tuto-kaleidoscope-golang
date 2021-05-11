@@ -29,23 +29,34 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser"
-
 	"github.com/llvm/llvm-project/llvm/bindings/go/llvm"
+	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser"
 )
+
+func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
+	module := llvm.NewModule("")
+	passManager := llvm.NewFunctionPassManagerForModule(module)
+	passManager.AddInstructionCombiningPass()
+	passManager.AddReassociatePass()
+	passManager.AddGVNPass()
+	passManager.AddCFGSimplificationPass()
+	passManager.InitializeFunc()
+	return &module, &passManager
+}
 
 type VisitorKaleido struct {
 	context     *llvm.Context
 	module      *llvm.Module
 	builder     *llvm.Builder
+	passManager *llvm.PassManager
 	namedValues map[string]interface{}
 }
 
 func NewVisitorKaleido() VisitorKaleido {
 	context := llvm.NewContext()
-	module := llvm.NewModule("")
+	module, passManager := initModuleAndPassManager()
 	builder := context.NewBuilder()
-	return VisitorKaleido{context: &context, module: &module, builder: &builder}
+	return VisitorKaleido{context: &context, module: module, passManager: passManager, builder: &builder}
 }
 
 func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err error) {
@@ -160,5 +171,6 @@ func (v *VisitorKaleido) VisitFunctionAST(node *parser.FunctionAST) interface{} 
 		llvmFunc.EraseFromParentAsFunction()
 		panic(err)
 	}
+	v.passManager.RunFunc(llvmFunc)
 	return llvmFunc
 }
