@@ -1,4 +1,4 @@
-module alea.net/xp/llvm/kaleidoscope
+module github.com/vhiribarren/tuto-llvm-kaleidoscope-golang
 
 go 1.16
 
