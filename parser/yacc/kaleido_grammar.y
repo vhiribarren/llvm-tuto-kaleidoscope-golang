@@ -59,7 +59,7 @@ import(
 %left '('
 
 %type<expr> Expr FuncExpr
-%type<argList> ProtoArgList ProtoArgListContinuation
+%type<argList> ProtoArgList
 %type<exprList> ExprList ExprListContinuation
 %type<proto> Prototype Ext
 %type<function> Def TopLevelExpr
@@ -74,29 +74,27 @@ Program : TopLevel
         yylex.(*parserContext).result = &$$
     }
 
-TopLevel: TopLevel Def
+TopLevel: TopLevel Def Delimiter
     {
         $1.Funcs = append($1.Funcs, $2)
         $$ = $1
     };
-TopLevel: TopLevel Ext
+TopLevel: TopLevel Ext Delimiter
     {
         $1.Protos = append($1.Protos, $2)
         $$ = $1
     };
-TopLevel: TopLevel TopLevelExpr
+TopLevel: TopLevel TopLevelExpr Delimiter
     {
         $1.Funcs = append($1.Funcs, $2)
         $$ = $1
     };
-TopLevel: ';' 
-{
-    $$ = parser.ProgramAST{}
-};
 TopLevel: /* Empty */ 
     {
         $$ = parser.ProgramAST{}
     };
+Delimiter: ';' ;
+Delimiter: /* Empty */ ;
 
 Def: DEF Prototype Expr
     {
@@ -144,13 +142,10 @@ Prototype: IDENTIFIER '(' ProtoArgList ')'
     {
         $$ = parser.PrototypeAST{FunctionName: $1.Value, Args: $3}
     };
-ProtoArgList: ProtoArgListContinuation;
+ProtoArgList: ProtoArgList IDENTIFIER
+    { $$ = append($1, $2.Value) };
 ProtoArgList:  /* Empty */
     { $$ = []string {  } } ; 
-ProtoArgListContinuation: ProtoArgListContinuation ',' IDENTIFIER
-    { $$ = append($1, $3.Value) };
-ProtoArgListContinuation: IDENTIFIER
-    { $$ = []string { $1.Value } };
 
 %%
 

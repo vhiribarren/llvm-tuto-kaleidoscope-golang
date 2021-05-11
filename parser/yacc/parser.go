@@ -130,53 +130,53 @@ const yyPrivate = 57344
 const yyLast = 53
 
 var yyAct = [...]int{
-	9, 19, 17, 18, 20, 7, 8, 11, 33, 24,
-	40, 38, 10, 13, 22, 23, 39, 37, 26, 27,
-	28, 29, 32, 11, 25, 3, 21, 42, 10, 13,
-	19, 17, 18, 20, 17, 18, 20, 14, 36, 41,
-	15, 20, 1, 2, 6, 4, 16, 5, 31, 30,
-	35, 34, 12,
+	8, 22, 20, 21, 23, 39, 38, 27, 36, 6,
+	7, 10, 41, 25, 10, 40, 9, 12, 26, 9,
+	12, 29, 30, 31, 32, 35, 22, 20, 21, 23,
+	28, 14, 20, 21, 23, 24, 18, 23, 17, 13,
+	42, 1, 2, 5, 15, 16, 19, 3, 4, 34,
+	33, 37, 11,
 }
 
 var yyPact = [...]int{
-	12, -1000, 1, -1000, -1000, -1000, -1000, 29, 29, 23,
-	14, -1000, -1000, 17, 17, -3, 11, 17, 17, 17,
-	17, 17, -6, 23, 27, -1000, 31, 31, 26, -1000,
-	3, -4, 23, -1000, 2, -5, -1000, -1000, 17, -1000,
-	16, 23, -1000,
+	-1000, -1000, 5, 18, 18, 18, 25, 25, 19, 23,
+	-1000, -1000, 8, -1000, -1000, -1000, -1000, 8, -5, 17,
+	8, 8, 8, 8, 8, -6, 19, -1000, -1000, 27,
+	27, 24, -1000, -8, -10, 19, -1000, 1, -1000, 8,
+	-1000, -1000, 19,
 }
 
 var yyPgo = [...]int{
-	0, 0, 52, 51, 50, 49, 48, 37, 47, 45,
-	44, 43, 42,
+	0, 0, 52, 51, 50, 49, 38, 48, 47, 43,
+	42, 41, 39,
 }
 
 var yyR1 = [...]int{
-	0, 12, 11, 11, 11, 11, 11, 9, 8, 10,
-	1, 1, 1, 1, 1, 1, 1, 1, 2, 5,
-	5, 6, 6, 7, 3, 3, 4, 4,
+	0, 11, 10, 10, 10, 10, 12, 12, 8, 7,
+	9, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+	4, 4, 5, 5, 6, 3, 3,
 }
 
 var yyR2 = [...]int{
-	0, 1, 2, 2, 2, 1, 0, 3, 3, 1,
-	1, 1, 1, 3, 3, 3, 3, 3, 4, 1,
-	0, 3, 1, 4, 1, 0, 3, 1,
+	0, 1, 3, 3, 3, 0, 1, 0, 3, 3,
+	1, 1, 1, 1, 3, 3, 3, 3, 3, 4,
+	1, 0, 3, 1, 4, 2, 0,
 }
 
 var yyChk = [...]int{
-	-1000, -12, -11, 13, -9, -8, -10, 4, 5, -1,
-	11, 6, -2, 12, -7, 11, -7, 8, 9, 7,
-	10, 12, -1, -1, 12, 13, -1, -1, -1, -1,
-	-5, -6, -1, 14, -3, -4, 11, 14, 15, 14,
-	15, -1, 11,
+	-1000, -11, -10, -8, -7, -9, 4, 5, -1, 11,
+	6, -2, 12, -12, 13, -12, -12, -6, 11, -6,
+	8, 9, 7, 10, 12, -1, -1, 12, 13, -1,
+	-1, -1, -1, -4, -5, -1, 14, -3, 14, 15,
+	14, 11, -1,
 }
 
 var yyDef = [...]int{
-	6, -2, 1, 5, 2, 3, 4, 0, 0, 9,
-	10, 11, 12, 0, 0, 0, 0, 0, 0, 0,
-	0, 20, 0, 7, 25, 8, 14, 15, 16, 17,
-	0, 19, 22, 13, 0, 24, 27, 18, 0, 23,
-	0, 21, 26,
+	5, -2, 1, 7, 7, 7, 0, 0, 10, 11,
+	12, 13, 0, 2, 6, 3, 4, 0, 0, 0,
+	0, 0, 0, 0, 21, 0, 8, 26, 9, 15,
+	16, 17, 18, 0, 20, 23, 14, 0, 19, 0,
+	24, 25, 22,
 }
 
 var yyTok1 = [...]int{
@@ -539,123 +539,113 @@ yydefault:
 			yylex.(*parserContext).result = &yyVAL.program
 		}
 	case 2:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyDollar[1].program.Funcs = append(yyDollar[1].program.Funcs, yyDollar[2].function)
 			yyVAL.program = yyDollar[1].program
 		}
 	case 3:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyDollar[1].program.Protos = append(yyDollar[1].program.Protos, yyDollar[2].proto)
 			yyVAL.program = yyDollar[1].program
 		}
 	case 4:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyDollar[1].program.Funcs = append(yyDollar[1].program.Funcs, yyDollar[2].function)
 			yyVAL.program = yyDollar[1].program
 		}
 	case 5:
-		yyDollar = yyS[yypt-1 : yypt+1]
-		{
-			yyVAL.program = parser.ProgramAST{}
-		}
-	case 6:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 			yyVAL.program = parser.ProgramAST{}
 		}
-	case 7:
+	case 8:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.function = parser.FunctionAST{Prototype: yyDollar[2].proto, Body: yyDollar[3].expr}
 		}
-	case 8:
+	case 9:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.proto = yyDollar[2].proto
 		}
-	case 9:
+	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.function = parser.FunctionAST{Prototype: parser.PrototypeAST{FunctionName: "__main__", Args: []string{}}, Body: yyDollar[1].expr}
 		}
-	case 10:
+	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.expr = parser.VariableExprAST(yyDollar[1].token.Value)
 		}
-	case 11:
+	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.expr = parser.NumberExprAST(yyDollar[1].token.Value)
 		}
-	case 13:
+	case 14:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.expr = yyDollar[2].expr
 		}
-	case 14:
+	case 15:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.expr = &parser.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '+'}
 		}
-	case 15:
+	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.expr = &parser.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '-'}
 		}
-	case 16:
+	case 17:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.expr = &parser.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '<'}
 		}
-	case 17:
+	case 18:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.expr = &parser.BinaryExprAST{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr, Op: '*'}
 		}
-	case 18:
+	case 19:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			log.Println("Parsed rule: FuncExpr")
 			yyVAL.expr = &parser.CallExprAST{FunctionName: yyDollar[1].token.Value, Args: yyDollar[3].exprList}
 		}
-	case 20:
+	case 21:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 			yyVAL.exprList = []parser.ExprAST{}
 		}
-	case 21:
+	case 22:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.exprList = append(yyDollar[1].exprList, yyDollar[3].expr)
 		}
-	case 22:
+	case 23:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.exprList = []parser.ExprAST{yyDollar[1].expr}
 		}
-	case 23:
+	case 24:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.proto = parser.PrototypeAST{FunctionName: yyDollar[1].token.Value, Args: yyDollar[3].argList}
 		}
 	case 25:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.argList = append(yyDollar[1].argList, yyDollar[2].token.Value)
+		}
+	case 26:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 			yyVAL.argList = []string{}
-		}
-	case 26:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		{
-			yyVAL.argList = append(yyDollar[1].argList, yyDollar[3].token.Value)
-		}
-	case 27:
-		yyDollar = yyS[yypt-1 : yypt+1]
-		{
-			yyVAL.argList = []string{yyDollar[1].token.Value}
 		}
 	}
 	goto yystack /* stack new state and value */
