@@ -41,6 +41,7 @@ import (
 const EMPTY_STRING = ""
 
 func main() {
+
 	filePtr := flag.String("file", EMPTY_STRING, "File container Kaleidoscope program")
 	flag.Parse()
 	if *filePtr == EMPTY_STRING {

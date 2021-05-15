@@ -26,7 +26,9 @@ Here what is currently done, with some differences with the original tutorial:
 
 - Step 4: JIT and Optimizer support
     - https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl04.html
-    - WIP
+    - JIT: I did not found the symbol used in the default `KaleidoscopeJIT.h`
+      file in the Go bindings, so I rewrote minimal JIT functions ; current
+      used Go bindings provide the MCJIT executing engine
 
 ## How to run
 

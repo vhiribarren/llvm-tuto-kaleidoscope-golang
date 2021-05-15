@@ -33,18 +33,21 @@ import (
 	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser"
 )
 
-func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
-	module := llvm.NewModule("")
+func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager, *KaleidoscopeJIT) {
+	module := llvm.NewModule("main")
+	jit := NewKaleidoJIT(&module)
+
 	passManager := llvm.NewFunctionPassManagerForModule(module)
 	passManager.AddInstructionCombiningPass()
 	passManager.AddReassociatePass()
 	passManager.AddGVNPass()
 	passManager.AddCFGSimplificationPass()
 	passManager.InitializeFunc()
-	return &module, &passManager
+	return &module, &passManager, &jit
 }
 
 type VisitorKaleido struct {
+	jit         *KaleidoscopeJIT
 	context     *llvm.Context
 	module      *llvm.Module
 	builder     *llvm.Builder
@@ -54,9 +57,9 @@ type VisitorKaleido struct {
 
 func NewVisitorKaleido() VisitorKaleido {
 	context := llvm.NewContext()
-	module, passManager := initModuleAndPassManager()
+	module, passManager, jit := initModuleAndPassManager()
 	builder := context.NewBuilder()
-	return VisitorKaleido{context: &context, module: module, passManager: passManager, builder: &builder}
+	return VisitorKaleido{jit: jit, context: &context, module: module, passManager: passManager, builder: &builder}
 }
 
 func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err error) {
@@ -74,6 +77,10 @@ func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err
 		}
 	}()
 	node.Accept(v)
+	res, err := v.jit.Run("__main__")
+	if err == nil {
+		fmt.Printf("Evaluated to: %v\n", res)
+	}
 	return v.module.String(), nil
 }
 
