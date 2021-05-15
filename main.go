@@ -31,7 +31,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser/yacc"
@@ -48,23 +47,19 @@ func main() {
 		startREPL()
 		return
 	}
-	data, err := ioutil.ReadFile(*filePtr)
+	processFile(*filePtr)
+
+}
+
+func processFile(filename string) {
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
-	kaleidoAST, err := yacc.BuildKaleidoAST(string(data))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	log.Printf("AST: %#v", kaleidoAST)
 	kaleidoVisitor := visitor.NewVisitorKaleido()
-	IRResult, err := kaleidoVisitor.GenerateIR(kaleidoAST)
-	if err != nil {
+	if err := consumeAndProcess(string(data), &kaleidoVisitor); err != nil {
 		fmt.Println(err)
-		return
 	}
-	print(IRResult)
 }
 
 func startREPL() {
@@ -73,15 +68,26 @@ func startREPL() {
 	for {
 		fmt.Print("kaleido> ")
 		input, _ := reader.ReadString('\n')
-		kaleidoAST, err := yacc.BuildKaleidoAST(string(input))
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		IRResult, err := kaleidoVisitor.GenerateIR(kaleidoAST)
-		if err != nil {
+		if err := consumeAndProcess(input, &kaleidoVisitor); err != nil {
 			fmt.Println(err)
 		}
-		fmt.Print(IRResult)
 	}
+}
+
+func consumeAndProcess(input string, kaleidoVisitor *visitor.VisitorKaleido) error {
+	kaleidoAST, err := yacc.BuildKaleidoAST(input)
+	if err != nil {
+		return err
+	}
+	err = kaleidoVisitor.FeedAST(kaleidoAST)
+	if err != nil {
+		return err
+	}
+	println(kaleidoVisitor.GenerateModuleIR())
+	res, err := kaleidoVisitor.EvalutateMain()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Main evaluated to: %v\n", res)
+	return nil
 }

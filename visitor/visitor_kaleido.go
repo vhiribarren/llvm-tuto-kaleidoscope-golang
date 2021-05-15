@@ -33,21 +33,18 @@ import (
 	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser"
 )
 
-func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager, *KaleidoscopeJIT) {
+func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
 	module := llvm.NewModule("main")
-	jit := NewKaleidoJIT(&module)
-
 	passManager := llvm.NewFunctionPassManagerForModule(module)
 	passManager.AddInstructionCombiningPass()
 	passManager.AddReassociatePass()
 	passManager.AddGVNPass()
 	passManager.AddCFGSimplificationPass()
 	passManager.InitializeFunc()
-	return &module, &passManager, &jit
+	return &module, &passManager
 }
 
 type VisitorKaleido struct {
-	jit         *KaleidoscopeJIT
 	context     *llvm.Context
 	module      *llvm.Module
 	builder     *llvm.Builder
@@ -57,15 +54,14 @@ type VisitorKaleido struct {
 
 func NewVisitorKaleido() VisitorKaleido {
 	context := llvm.NewContext()
-	module, passManager, jit := initModuleAndPassManager()
+	module, passManager := initModuleAndPassManager()
 	builder := context.NewBuilder()
-	return VisitorKaleido{jit: jit, context: &context, module: module, passManager: passManager, builder: &builder}
+	return VisitorKaleido{context: &context, module: module, passManager: passManager, builder: &builder}
 }
 
-func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err error) {
+func (v *VisitorKaleido) FeedAST(node *parser.ProgramAST) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			irCode = ""
 			switch recoveredError := r.(type) {
 			case error:
 				err = recoveredError
@@ -77,11 +73,16 @@ func (v *VisitorKaleido) GenerateIR(node *parser.ProgramAST) (irCode string, err
 		}
 	}()
 	node.Accept(v)
-	res, err := v.jit.Run("__main__")
-	if err == nil {
-		fmt.Printf("Evaluated to: %v\n", res)
-	}
-	return v.module.String(), nil
+	return nil
+}
+
+func (v *VisitorKaleido) GenerateModuleIR() (irCode string) {
+	return v.module.String()
+}
+
+func (v *VisitorKaleido) EvalutateMain() (float64, error) {
+	jit := NewKaleidoJIT(v.module)
+	return jit.Run("__main__")
 }
 
 func (v *VisitorKaleido) VisitNumberExprAST(node *parser.NumberExprAST) interface{} {

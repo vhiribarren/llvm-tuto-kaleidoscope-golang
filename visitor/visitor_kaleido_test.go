@@ -58,8 +58,7 @@ func TestParseValidProgram(t *testing.T) {
 			t.Error("File", file, err)
 		}
 		visitor := NewVisitorKaleido()
-		_, err = visitor.GenerateIR(ast)
-		if err != nil {
+		if err = visitor.FeedAST(ast); err != nil {
 			t.Error("File", file, err)
 		}
 	}
@@ -81,8 +80,7 @@ func TestParseInvalidProgram(t *testing.T) {
 			t.Error("File", file, err)
 		}
 		visitor := NewVisitorKaleido()
-		_, err = visitor.GenerateIR(ast)
-		if err == nil {
+		if err = visitor.FeedAST(ast); err == nil {
 			t.Error("Should have triggered an error, file", file, err)
 		}
 	}
