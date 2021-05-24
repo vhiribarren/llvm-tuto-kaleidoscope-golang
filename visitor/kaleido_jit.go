@@ -24,6 +24,10 @@ func NewKaleidoJIT(module *llvm.Module) KaleidoscopeJIT {
 	return KaleidoscopeJIT{executionEngine}
 }
 
+func (j *KaleidoscopeJIT) AddModule(module llvm.Module) {
+	j.executionEngine.AddModule(module)
+}
+
 func (j *KaleidoscopeJIT) Run(name string, args ...float64) (float64, error) {
 	f := j.executionEngine.FindFunction(name)
 	if f.IsNil() {

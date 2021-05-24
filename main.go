@@ -83,7 +83,7 @@ func consumeAndProcess(input string, kaleidoVisitor *visitor.VisitorKaleido) err
 	if err != nil {
 		return err
 	}
-	println(kaleidoVisitor.GenerateModuleIR())
+	println(kaleidoVisitor.GenerateLastModuleIR())
 	res, err := kaleidoVisitor.EvalutateMain()
 	if err != nil {
 		return err

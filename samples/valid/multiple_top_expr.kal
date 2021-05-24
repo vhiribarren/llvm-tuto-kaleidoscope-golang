@@ -1,0 +1,6 @@
+1200
+def test(a) a + 1
+test(1)
+5 * 20
+def test(a) a + 40
+test(2)

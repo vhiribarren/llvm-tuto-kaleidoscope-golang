@@ -33,8 +33,8 @@ import (
 	"github.com/vhiribarren/tuto-llvm-kaleidoscope-golang/parser"
 )
 
-func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
-	module := llvm.NewModule("main")
+func newModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
+	module := llvm.NewModule("")
 	passManager := llvm.NewFunctionPassManagerForModule(module)
 	passManager.AddInstructionCombiningPass()
 	passManager.AddReassociatePass()
@@ -45,18 +45,34 @@ func initModuleAndPassManager() (*llvm.Module, *llvm.PassManager) {
 }
 
 type VisitorKaleido struct {
-	context     *llvm.Context
-	module      *llvm.Module
-	builder     *llvm.Builder
-	passManager *llvm.PassManager
-	namedValues map[string]interface{}
+	context         *llvm.Context
+	lastModule      *llvm.Module
+	jit             *KaleidoscopeJIT
+	builder         *llvm.Builder
+	lastPassManager *llvm.PassManager
+	namedValues     map[string]interface{}
+	prototypes      map[string]*parser.PrototypeAST
 }
 
 func NewVisitorKaleido() VisitorKaleido {
 	context := llvm.NewContext()
-	module, passManager := initModuleAndPassManager()
+	module, passManager := newModuleAndPassManager()
 	builder := context.NewBuilder()
-	return VisitorKaleido{context: &context, module: module, passManager: passManager, builder: &builder}
+	jit := NewKaleidoJIT(module)
+	return VisitorKaleido{
+		context:         &context,
+		lastModule:      module,
+		jit:             &jit,
+		lastPassManager: passManager,
+		prototypes:      make(map[string]*parser.PrototypeAST),
+		builder:         &builder}
+}
+
+func (v *VisitorKaleido) switchModule() {
+	newModule, newPassManager := newModuleAndPassManager()
+	v.jit.AddModule(*newModule)
+	v.lastModule = newModule
+	v.lastPassManager = newPassManager
 }
 
 func (v *VisitorKaleido) FeedAST(node *parser.ProgramAST) (err error) {
@@ -76,13 +92,12 @@ func (v *VisitorKaleido) FeedAST(node *parser.ProgramAST) (err error) {
 	return nil
 }
 
-func (v *VisitorKaleido) GenerateModuleIR() (irCode string) {
-	return v.module.String()
+func (v *VisitorKaleido) GenerateLastModuleIR() string {
+	return v.lastModule.String()
 }
 
 func (v *VisitorKaleido) EvalutateMain() (float64, error) {
-	jit := NewKaleidoJIT(v.module)
-	return jit.Run("__main__")
+	return v.jit.Run("__main__")
 }
 
 func (v *VisitorKaleido) VisitNumberExprAST(node *parser.NumberExprAST) interface{} {
@@ -119,9 +134,13 @@ func (v *VisitorKaleido) VisitVariableExprAST(node *parser.VariableExprAST) inte
 
 func (v *VisitorKaleido) VisitCallExprAST(node *parser.CallExprAST) interface{} {
 	log.Println("VisitCallExprAST")
-	funcRef := v.module.NamedFunction(node.FunctionName)
+	funcRef := v.lastModule.NamedFunction(node.FunctionName)
 	if funcRef.IsNil() {
-		panic("Function " + node.FunctionName + " does not exist")
+		if prototypeAST, ok := v.prototypes[node.FunctionName]; ok {
+			funcRef = prototypeAST.Accept(v).(llvm.Value)
+		} else {
+			panic("Function " + node.FunctionName + " does not exist")
+		}
 	}
 	if funcRef.ParamsCount() != len(node.Args) {
 		panic("Function " + node.FunctionName + ": incorrect number of arguments")
@@ -141,17 +160,18 @@ func (v *VisitorKaleido) VisitPrototypeAST(node *parser.PrototypeAST) interface{
 		paramTypes = append(paramTypes, llvm.DoubleType())
 	}
 	functionType := llvm.FunctionType(llvm.DoubleType(), paramTypes, false)
-	llvmFunc := llvm.AddFunction(*v.module, node.FunctionName, functionType)
+	llvmFunc := llvm.AddFunction(*v.lastModule, node.FunctionName, functionType)
 	llvmFunc.SetLinkage(llvm.ExternalLinkage)
 	for i, argName := range node.Args {
 		llvmFunc.Params()[i].SetName(argName)
 	}
+	v.prototypes[node.FunctionName] = node
 	return llvmFunc
 }
 
 func (v *VisitorKaleido) VisitFunctionAST(node *parser.FunctionAST) interface{} {
 	log.Println("VisitFunctionAST")
-	llvmFunc := v.module.NamedFunction(node.Prototype.FunctionName)
+	llvmFunc := v.lastModule.NamedFunction(node.Prototype.FunctionName)
 	if llvmFunc.IsNil() {
 		llvmFunc = node.Prototype.Accept(v).(llvm.Value)
 	}
@@ -179,6 +199,8 @@ func (v *VisitorKaleido) VisitFunctionAST(node *parser.FunctionAST) interface{} 
 		llvmFunc.EraseFromParentAsFunction()
 		panic(err)
 	}
-	v.passManager.RunFunc(llvmFunc)
+	v.lastPassManager.RunFunc(llvmFunc)
+	println(v.lastModule.String())
+	v.switchModule()
 	return llvmFunc
 }

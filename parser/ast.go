@@ -43,11 +43,21 @@ type ProgramAST struct {
 }
 
 func (p *ProgramAST) Accept(visitor Visitor) interface{} {
-	for _, e := range p.Protos {
-		e.Accept(visitor)
+	// Warning: here, if we loop on the values instead of the indices,
+	// we may use a variable which value changes at each loop.
+	// Accept() uses a pointer receiver, so it will actually point to
+	// the variable of the for loop. If we store and use this receiver
+	// in the Accept() function, it means we store something that will
+	// point to a value that will change at each loop! We do not want that.
+	// Others had this issue:
+	// https://github.com/golang/go/issues/16520
+	// https://github.com/golang/go/issues/20725
+	// https://github.com/golang/go/issues/20733
+	for i := range p.Protos {
+		p.Protos[i].Accept(visitor)
 	}
-	for _, e := range p.Funcs {
-		e.Accept(visitor)
+	for i := range p.Funcs {
+		p.Funcs[i].Accept(visitor)
 	}
 	return nil
 }
